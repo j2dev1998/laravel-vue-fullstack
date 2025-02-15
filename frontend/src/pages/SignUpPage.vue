@@ -1,16 +1,34 @@
-<script setup>
+<script setup lang="js">
 import { ref } from "vue";
 import GuestLayout from "../components/GuestLayout.vue";
+import axiosClient from "../axios";
 
 const data = ref({
   name: "",
   email: "",
   password: "",
-  passwordConfirmation: "",
+  password_confirmation: "",
 });
 
-function submit() {
-  axiosClient.post("/register", data.value);
+const errors = ref([])
+
+async function submit() {
+  try {
+    // obtener el token CSRF
+    await axiosClient.get('/sanctum/csrf-cookie');
+
+    // enviar la solicitud de registro
+    await axiosClient.post('/register', data.value);
+
+    alert("¡Register Successfully!");
+  } catch (error) {
+    console.log(error);
+    if (error.response && error.response.data.errors) {
+      errors.value = error.response.data.errors;
+    } else {
+      errors.value = { general: ["Something went wrong."] };
+    }
+  }
 }
 </script>
 
@@ -22,7 +40,22 @@ function submit() {
       Create New Account
     </h2>
 
-    <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
+    <!-- errors message -->
+    <div
+      v-if="Object.keys(errors).length"
+      class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+      role="alert"
+    >
+      <ul>
+        <li v-for="(errorMessages, field) in errors" :key="field">
+          <span v-for="(message, index) in errorMessages" :key="index">
+            - {{ message }}
+          </span>
+        </li>
+      </ul>
+    </div>
+
+    <div class="mt-5 sm:mx-auto sm:w-full sm:max-w-sm">
       <form @submit.prevent="submit" class="space-y-4">
         <!-- fullname -->
         <div>
@@ -85,7 +118,7 @@ function submit() {
         <div>
           <div class="flex items-center justify-between">
             <label
-              for="passwordConfirmation"
+              for="password_confirmation"
               class="block text-sm/6 font-medium text-gray-900"
               >Repeat password</label
             >
@@ -93,12 +126,12 @@ function submit() {
           <div class="mt-2">
             <input
               type="password"
-              name="passwordConfirmation"
-              id="passwordConfirmation"
+              name="password_confirmation"
+              id="password_confirmation"
               required=""
               placeholder="Repeat password"
               class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
-              v-model="data.passwordConfirmation"
+              v-model="data.password_confirmation"
             />
           </div>
         </div>

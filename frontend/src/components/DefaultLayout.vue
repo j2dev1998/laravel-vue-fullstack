@@ -9,7 +9,8 @@ import {
   MenuItems,
 } from "@headlessui/vue";
 import { Bars3Icon, XMarkIcon } from "@heroicons/vue/24/outline";
-import { useRoute } from "vue-router";
+import axiosClient from "../axios";
+import router from "../router";
 
 const user = {
   name: "Tom Cook",
@@ -24,7 +25,15 @@ const navigation = [
 
 // functions
 
-const logout = () => console.log("logout");
+const logout = async () => {
+  try {
+    const response = await axiosClient.post("/logout");
+
+    if (response.status === 204) router.push({ name: "login" });
+  } catch (error) {
+    console.error("Logout failed:", error);
+  }
+};
 </script>
 
 <template>

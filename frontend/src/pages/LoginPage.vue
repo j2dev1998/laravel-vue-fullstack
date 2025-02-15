@@ -1,5 +1,34 @@
 <script setup>
+import { ref } from "vue";
 import GuestLayout from "../components/GuestLayout.vue";
+import axiosClient from "../axios";
+import router from "../router";
+
+const data = ref({
+  email: "",
+  password: "",
+});
+
+const errors = ref({});
+
+async function submit() {
+  try {
+    // obtener el token CSRF
+    await axiosClient.get("/sanctum/csrf-cookie");
+
+    // enviar la solicitud de registro
+    const response = await axiosClient.post("/login", data.value);
+
+    if (response.status === 200) router.push({ name: "home" });
+  } catch (error) {
+    console.log(error);
+    if (error.response && error.response.data.errors) {
+      errors.value = error.response.data.errors;
+    } else {
+      errors.value = { general: ["Something went wrong."] };
+    }
+  }
+}
 </script>
 
 <template>
@@ -10,14 +39,30 @@ import GuestLayout from "../components/GuestLayout.vue";
       Sign in to your account
     </h2>
 
+    <!-- errors message -->
+    <div
+      v-if="Object.keys(errors).length"
+      class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+      role="alert"
+    >
+      <ul>
+        <li v-for="(errorMessages, field) in errors" :key="field">
+          <span v-for="(message, index) in errorMessages" :key="index">
+            - {{ message }}
+          </span>
+        </li>
+      </ul>
+    </div>
+
     <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-      <form class="space-y-6" action="#" method="POST">
+      <form @submit.prevent="submit" class="space-y-6">
         <div>
           <label for="email" class="block text-sm/6 font-medium text-gray-900"
             >Email address</label
           >
           <div class="mt-2">
             <input
+              v-model="data.email"
               type="email"
               name="email"
               id="email"
@@ -45,6 +90,7 @@ import GuestLayout from "../components/GuestLayout.vue";
           </div>
           <div class="mt-2">
             <input
+              v-model="data.password"
               type="password"
               name="password"
               id="password"
