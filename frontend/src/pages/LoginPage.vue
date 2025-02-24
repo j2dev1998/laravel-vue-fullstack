@@ -3,25 +3,32 @@ import { ref } from "vue";
 import GuestLayout from "../components/GuestLayout.vue";
 import axiosClient from "../axios";
 import router from "../router";
+import SpinnerComponent from "../components/SpinnerComponent.vue";
 
 const data = ref({
   email: "",
   password: "",
 });
 
+const isLoading = ref(false);
+
 const errors = ref({});
 
 async function submit() {
+  isLoading.value = true;
   try {
-    // obtener el token CSRF
+    // establecer cookie CSRF
     await axiosClient.get("/sanctum/csrf-cookie");
 
-    // enviar la solicitud de registro
-    const response = await axiosClient.post("/login", data.value);
+    // hacer la peticion de ingreso
+    await axiosClient.post("/login", data.value);
 
-    if (response.status === 200) router.push({ name: "home" });
+    router.push({ name: "home" });
+
+    isLoading.value = false;
   } catch (error) {
-    console.log(error);
+    isLoading.value = false;
+
     if (error.response && error.response.data.errors) {
       errors.value = error.response.data.errors;
     } else {
@@ -103,10 +110,18 @@ async function submit() {
 
         <div>
           <button
+            v-if="!isLoading"
             type="submit"
             class="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
           >
             Sign in
+          </button>
+
+          <button
+            v-if="isLoading"
+            class="flex w-full justify-center rounded-md bg-indigo-600 opacity-75 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+          >
+            <SpinnerComponent />
           </button>
         </div>
       </form>

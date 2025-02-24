@@ -14,13 +14,12 @@ const errors = ref([])
 
 async function submit() {
   try {
-    // obtener el token CSRF
+    // establecer cookie CSRF
     await axiosClient.get('/sanctum/csrf-cookie');
 
-    // enviar la solicitud de registro
+    // enviar la peticion de registro con los datos
     await axiosClient.post('/register', data.value);
 
-    alert("¡Register Successfully!");
   } catch (error) {
     console.log(error);
     if (error.response && error.response.data.errors) {

@@ -4,6 +4,7 @@ import HomePage from "./pages/HomePage.vue";
 import MyImages from "./pages/MyImages.vue";
 import LoginPage from "./pages/LoginPage.vue";
 import SignUpPage from "./pages/SignUpPage.vue";
+import { useUserStore } from "./store/user";
 
 const routes = [
   {
@@ -13,6 +14,12 @@ const routes = [
       { path: "", name: "home", component: HomePage },
       { path: "images", name: "my-images", component: MyImages },
     ],
+    beforeEnter: async (to, from, next) => {
+      const userStore = useUserStore();
+
+      await userStore.fetchUser();
+      next();
+    },
   },
 
   {

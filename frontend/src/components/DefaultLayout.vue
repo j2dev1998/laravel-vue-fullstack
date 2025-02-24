@@ -11,13 +11,12 @@ import {
 import { Bars3Icon, XMarkIcon } from "@heroicons/vue/24/outline";
 import axiosClient from "../axios";
 import router from "../router";
+import { useUserStore } from "../store/user";
+import { computed } from "vue";
 
-const user = {
-  name: "Tom Cook",
-  email: "tom@example.com",
-  imageUrl:
-    "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-};
+const userStore = useUserStore();
+const user = computed(() => userStore.user);
+
 const navigation = [
   { name: "Upload", to: { name: "home" }, current: true },
   { name: "My images", to: { name: "my-images" }, current: false },
@@ -82,7 +81,7 @@ const logout = async () => {
                     <span class="sr-only">Open user menu</span>
                     <img
                       class="size-8 rounded-full"
-                      :src="user.imageUrl"
+                      src="https://randomuser.me/api/portraits/men/62.jpg"
                       alt=""
                     />
                   </MenuButton>
